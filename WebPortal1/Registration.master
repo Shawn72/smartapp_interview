@@ -1,0 +1,54 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Registration.master.cs" Inherits="Registration" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>Smart App Portal | Account Open Page</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css"/>
+    <!-- Ionicons -->
+    <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css"/>
+    <!-- icheck bootstrap -->
+    <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css"/>
+    <!-- Theme style -->
+    <link rel="stylesheet" href="dist/css/adminlte.min.css"/>
+    <!-- Google Font: Source Sans Pro -->
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet"/>
+
+</head>
+
+<body class="hold-transition register-page">
+<form runat="server" enctype="multipart/form-data" >
+    <asp:ScriptManager runat="server"></asp:ScriptManager>
+
+
+    <div class="register-box">
+        <div class="register-logo">
+            <a href="../../index2.html"><b>Smart App Portal</b></a>
+        </div>
+        
+
+        <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+        <hr />
+
+    </div>
+
+ </form>
+<!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+<!-- Custom Rss -->
+<script src="dist/js/sweetalert2@8.js" type="text/javascript" defer></script>
+<script src="customassets/js/buttonClicks.js"></script>
+
+</body>
+</html>
