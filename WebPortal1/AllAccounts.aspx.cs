@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Data;
-using System.Globalization;
 using System.Web.UI.WebControls;
 using MySql.Data.MySqlClient;
 
 public partial class AllAccounts : System.Web.UI.Page
 {
     /// MySQL Connection string
-    public static readonly string ConString =
-        @"datasource=localhost;port=3306;username=root;password=root;database=smartapp_db";
+    public static readonly string ConString = new DBConfig().MysqLConnector();
 
     protected void Page_Load(object sender, EventArgs e)
     {

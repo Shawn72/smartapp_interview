@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Web;
 using System.Web.Security;
-using DotNetOpenAuth.AspNet;
 using Microsoft.AspNet.Membership.OpenAuth;
 
 public partial class Account_RegisterExternalLogin : System.Web.UI.Page

@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="RecentTransactions.aspx.cs" Inherits="RecentTransactions" MasterPageFile="~/Site.master" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="RecentInvestmentTransactions.aspx.cs" Inherits="RecentInvestmentTransactions" MasterPageFile="~/Site.master" %>
 
 <asp:Content runat="server" ID="BodyContent" ContentPlaceHolderID="MainContent">
   
@@ -7,7 +7,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                      <p>Transactions for Account:  <asp:TextBox runat="server" ID="txtAccountNum" ReadOnly="True" CssClass="form-control" ></asp:TextBox></p> 
+                    <p>Transactions for Account:  <asp:TextBox runat="server" ID="txtAccountNum" ReadOnly="True" CssClass="form-control" ></asp:TextBox></p> 
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
@@ -26,18 +26,14 @@
             <div class="card-body table-responsive p-0">	
                 <asp:GridView ID="gridViewTransactions" runat="server" CssClass="table table-hover" GridLines="None" AutoGenerateColumns="false" EmptyDataText = "No files available!">
                     <Columns>
-                        <asp:BoundField DataField="transaction_description" HeaderText="Transaction Description" />
-                        <asp:BoundField DataField="transaction_amount" HeaderText="Transaction Amount" /> 
-                        <asp:BoundField DataField="transaction_type" HeaderText="Transaction Type" /> 
+                        <asp:BoundField DataField="investment_description" HeaderText="Transaction Description" />
+                        <asp:BoundField DataField="transaction_value" HeaderText="Transaction Amount" /> 
                         <asp:BoundField DataField="transaction_date" HeaderText="Transaction Date/Time" /> 
                     </Columns>
                 </asp:GridView>
             </div>
         </div>
-        
-        <a href="AllAccounts.aspx" ><< Back</a>
+        <a href="Investments.aspx" ><< Back</a>
     </section>
     
 </asp:Content>
-
-

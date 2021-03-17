@@ -7,7 +7,7 @@ using MySql.Data.MySqlClient;
 public partial class AccountTransactions : System.Web.UI.Page
 {
     /// MySQL Connection string
-    public static readonly string ConString = @"datasource=localhost;port=3306;username=root;password=root;database=smartapp_db";
+    public static readonly string ConString = new DBConfig().MysqLConnector();
 
     protected void Page_Load(object sender, EventArgs e)
     {
@@ -66,6 +66,8 @@ public partial class AccountTransactions : System.Web.UI.Page
                         trx_feedback.InnerHtml = "<div class='alert alert-danger'>Your Account is Inactive! </div>";
                         btnDeposit.Enabled = false;
                         btnWithdraw.Enabled = false;
+                        btnPayBill.Enabled = false;
+                        btnPayInvestment.Enabled = false;
                     }
                 }
             }
@@ -526,6 +528,154 @@ public partial class AccountTransactions : System.Web.UI.Page
 
     protected void btnPayInvestment_OnClick(object sender, EventArgs e)
     {
-        
+        DoInvestmentTrx();
+    }
+
+    protected void DoInvestmentTrx()
+    {
+        MySqlTransaction mysqlTrx = (dynamic)null;
+        MySqlConnection con = (dynamic)null;
+        var accountNo = Request.QueryString["accNo"];
+
+        //get investment details
+        var investmentId = (dynamic)null;
+        var investmentDescription = (dynamic) null;
+        //var investmentValue = (dynamic)null;
+
+        //get account_id, user_id
+        var accountid = (dynamic)null;
+        var userid = (dynamic)null;
+
+        try
+        {
+            //now add supplied data to dB
+            if (ddlInvestment.SelectedIndex == 0)
+            {
+                trx_feedback.InnerHtml = "<div class='alert alert-danger'>Kindly select the Investment to pay!</div>";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtPayInvestment.Text.ToString(CultureInfo.InvariantCulture)))
+            {
+                trx_feedback.InnerHtml = "<div class='alert alert-danger'>Input amount to pay!</div>";
+                return;
+            }
+
+            using (con = new MySqlConnection(ConString))
+            {
+
+                string checkifAccountExists = "SELECT * FROM user_bank_details WHERE account_number = @accountnumber LIMIT 1";
+                //check if user exists first
+
+                string getInvestmentDetails = "SELECT * FROM investments WHERE investment_code = @investmntCode LIMIT 1";
+                //check investment details first
+
+                con.Open();
+                MySqlCommand commandXt = new MySqlCommand(checkifAccountExists, con);
+
+                //use parametarized queries to prevent sql injection
+                commandXt.Parameters.AddWithValue("@accountnumber", accountNo);
+
+                int accountIsThere = (int)commandXt.ExecuteScalar();
+
+                if (accountIsThere == 1)
+                {
+                    DataTable dt = new DataTable();
+                    MySqlDataAdapter da = new MySqlDataAdapter(commandXt);
+                    da.Fill(dt);
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        accountid = dr["id"];
+                        userid = dr["user_id"];
+                    }
+
+                    //investment details
+                    MySqlCommand commandInv = new MySqlCommand(getInvestmentDetails, con);
+                    //use parametarized queries to prevent sql injection
+                    commandInv.Parameters.AddWithValue("@investmntCode", ddlInvestment.SelectedValue);
+
+                    int investmenIsThere = (int)commandInv.ExecuteScalar();
+
+                    if (investmenIsThere >= 1)
+                    {
+                        DataTable dti = new DataTable();
+                        MySqlDataAdapter dai = new MySqlDataAdapter(commandInv);
+                        dai.Fill(dti);
+                        foreach (DataRow dr in dti.Rows)
+                        {
+                            investmentId = dr["id"];
+                            investmentDescription = dr["investment_description"];
+                           //investmentValue = dr["investment_value"];
+                        }
+                    }
+
+                    //account exist, now update it with deposit
+                        string updateQry =
+                        "UPDATE user_bank_details SET account_balance = account_balance-@amounttopay WHERE account_number=@account_number";
+
+                    MySqlCommand commandUpdt = new MySqlCommand(updateQry, con);
+                    // Start a local transaction
+                    mysqlTrx = con.BeginTransaction();
+                    // assign both transaction object and connection to Command object for a pending local transaction
+                    commandUpdt.Connection = con;
+                    commandUpdt.Transaction = mysqlTrx;
+
+                    //use parametarized queries to prevent sql injection
+                    commandUpdt.Parameters.AddWithValue("@amounttopay", Convert.ToDecimal(txtPayInvestment.Text));
+                    commandUpdt.Parameters.AddWithValue("@account_number", accountNo);
+
+                    if (commandUpdt.ExecuteNonQuery() == 1)
+                    {
+                        //update is success, now update insert investment transactions table
+                        
+                        string insertQrytoTrxs =
+                            "INSERT INTO investment_transactions(investment_id, user_id, user_account_id, transaction_value,  investment_transaction_type, transaction_date) " +
+                            "VALUES(@investmentId, @userid, @useraccountid, @trxvalue, @trxtype, @trxdate)";
+
+                        MySqlCommand commandP = new MySqlCommand(insertQrytoTrxs, con);
+                        //use parametarized queries to prevent sql injection
+                        commandP.Parameters.AddWithValue("@investmentId", investmentId);
+                        commandP.Parameters.AddWithValue("@userid", userid);
+                        commandP.Parameters.AddWithValue("@useraccountid", accountid);
+                        commandP.Parameters.AddWithValue("@trxvalue", Convert.ToDecimal(txtPayInvestment.Text));
+                        commandP.Parameters.AddWithValue("@trxtype", investmentDescription);
+                        commandP.Parameters.AddWithValue("@trxdate", DateTime.Now);
+
+                        if (commandP.ExecuteNonQuery() == 1)
+                        {
+                            //now commit
+                            mysqlTrx.Commit();
+                            Response.Redirect("AccountTransactions.aspx?accNo=" + accountNo);
+                            trx_feedback.InnerHtml = "<div class='alert alert-success' style='display:block'>Investment payment success</div>";
+                        }
+
+                    }
+                }
+                con.Close();
+                trx_feedback.InnerHtml = "<div class='alert alert-danger'>Account not found!</div>";
+            }
+        }
+        catch (MySqlException ex)
+        {
+            try
+            {
+                //rollback the transaction if any error occurs during the process of inserting
+                con.Open();
+                mysqlTrx.Rollback();
+                con.Close();
+            }
+            catch (MySqlException ex2)
+            {
+                if (mysqlTrx.Connection != null)
+                {
+                    trx_feedback.InnerHtml = "<div class='alert alert-danger'>An exception of type " + ex2.GetType() + " was encountered while attempting to roll back the transaction!</div>";
+                }
+            }
+            trx_feedback.InnerHtml = "<div class='alert alert-danger'>withdraw not success due to this error: " + ex.Message + "</div>";
+        }
+        finally
+        {
+            con.Close();
+        }
     }
 }
